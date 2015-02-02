@@ -2,6 +2,24 @@
 
 CMake build of http://www.cs.jhu.edu/~misha/Code/PoissonRecon/ with MATLAB MEX-File bindings
 
+## Build
+
+Edit `CMakeLists.txt`
+
+```
+set(MEX_PATH /Applications/MATLAB_R2014b.app/bin/mex)
+```
+
+Compile
+
+```
+cmake -H. -Bbuild
+make -Cbuild
+
+ls bin
+PoissonRecon    SurfaceTrimmer    poissonRecon.mexmaci64
+```
+
 ## Usage
 
 ```
