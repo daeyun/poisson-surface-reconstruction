@@ -42,6 +42,31 @@ bool MemoryPointStream< Real >::nextPoint( Point3D< Real >& p , Point3D< Real >&
 }
 
 template< class Real >
+ArrayPointStream< Real >::ArrayPointStream(std::vector<double>* data)
+{
+  _current = 0;
+  _data = data;
+}
+template< class Real >
+ArrayPointStream< Real >::~ArrayPointStream( void ) { }
+template< class Real >
+void ArrayPointStream< Real >::reset( void ) { _current = 0; }
+template< class Real >
+bool ArrayPointStream< Real >::nextPoint( Point3D< Real >& p , Point3D< Real >& n )
+{
+  if (_current >= (*_data).size()) return false;
+
+	p[0] = (*_data)[_current++];
+	p[1] = (*_data)[_current++];
+	p[2] = (*_data)[_current++];
+	n[0] = (*_data)[_current++];
+	n[1] = (*_data)[_current++];
+	n[2] = (*_data)[_current++];
+
+	return true;
+}
+
+template< class Real >
 ASCIIPointStream< Real >::ASCIIPointStream( const char* fileName )
 {
 	_fp = fopen( fileName , "r" );

@@ -38,6 +38,12 @@
 #include <string.h>
 #include "Ply.h"
 
+#include <vector>
+extern std::vector<double> double_data;
+extern std::vector<int> int_data;
+extern bool is_writing_to_memory;
+extern bool is_writing_int;
+
 const char *type_names[] = {
 	"invalid",
 	"char",
@@ -258,7 +264,12 @@ PlyFile *ply_open_for_writing(
 	
 	/* open the file for writing */
 	
-	fp = fopen (name, "wb");
+  if (is_writing_to_memory) {
+    // TODO: find a better way to do this
+    fp = stdout;
+  } else {
+    fp = fopen (name, "wb");
+  }
 	if (fp == NULL) {
 		return (NULL);
 	}
@@ -631,6 +642,7 @@ void ply_put_element(PlyFile *plyfile, void *elem_ptr)
 		
 		/* write out each property of the element */
 		for (j = 0; j < elem->nprops; j++) {
+
 			prop = elem->props[j];
 			if (elem->store_prop[j] == OTHER_PROP)
 				elem_data = *other_ptr;
@@ -650,6 +662,12 @@ void ply_put_element(PlyFile *plyfile, void *elem_ptr)
 				for (k = 0; k < list_count; k++) {
 					get_stored_item ((void *) item, prop->internal_type,
 						&int_val, &uint_val, &double_val);
+
+      if (is_writing_int) {
+        printf("1: %d\n", list_count);
+        printf("2: %d\n", int_val);
+      }
+
 					write_binary_item (fp, plyfile->file_type, int_val, uint_val,
 						double_val, prop->external_type);
 					item += item_size;
@@ -2032,6 +2050,10 @@ Read an element from a binary file.
 	  short short_val;
 	  float float_val;
 	  void  *value;
+
+    int mem_int_val;
+    double mem_double_val;
+    bool is_assigned = false;
 	  
 	  switch (type) {
 	  case PLY_CHAR:
@@ -2047,6 +2069,8 @@ Read an element from a binary file.
 	  case PLY_INT:
 	  case PLY_INT_32:
 		  value = &int_val;
+      mem_int_val = int_val;
+      is_assigned = true;
 		  break;
 	  case PLY_UCHAR:
 	  case PLY_UINT_8:
@@ -2056,19 +2080,27 @@ Read an element from a binary file.
 	  case PLY_USHORT:
 	  case PLY_UINT_16:
 	    ushort_val = (unsigned short)(uint_val);
+      mem_int_val = ushort_val;
+      is_assigned = true;
 		  value = &ushort_val;
 		  break;
 	  case PLY_UINT:
 	  case PLY_UINT_32:
 		  value = &uint_val;
+      mem_int_val = uint_val;
+      is_assigned = true;
 		  break;
 	  case PLY_FLOAT:
 	  case PLY_FLOAT_32:
 		  float_val = (float)double_val;
+      mem_double_val = float_val;
+      is_assigned = true;
 		  value = &float_val;
 		  break;
 	  case PLY_DOUBLE:
 	  case PLY_FLOAT_64:
+      mem_double_val = double_val;
+      is_assigned = true;
 		  value = &double_val;
 		  break;
 	  default:
@@ -2076,7 +2108,14 @@ Read an element from a binary file.
 		  exit (-1);
 	  }
 
-	  
+    if (is_writing_to_memory && is_assigned) {
+      if (is_writing_int) {
+        int_data.push_back(mem_int_val);
+      } else {
+        double_data.push_back(mem_double_val);
+      }
+    }
+
 	  if ((file_type != native_binary_type) && (ply_type_size[type] > 1))
 		  swap_bytes((char *)value, ply_type_size[type]);
 	  

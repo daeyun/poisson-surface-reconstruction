@@ -19,6 +19,13 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
+#include <vector>
+#include <sstream>
+#include <iostream>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #ifndef N_LHS_VAR
 #define N_LHS_VAR nargout
@@ -50,6 +57,10 @@ enum ArgType {
   kUint32
 };
 
+// Redirect stderr to a file or stringstream .
+void CaptureErrorMsg(std::stringstream &stderr_content);
+void CaptureErrorMsg(const std::string &filename);
+
 // e.g. double* mat = GetArg<kDouble,EQ,GT>(0, prhs, 3, 3); Throws an error if
 // prhs[0] doesn't have exactly 3 rows or have less than 3 columns. 0s are
 // ignored.
@@ -73,6 +84,15 @@ const int kVerboseLevel = VerboseLevel();
 // memory content in-place. Undocumented.
 // http://undocumentedmatlab.com/blog/matlab-mex-in-place-editing
 extern "C" bool mxUnshareArray(mxArray *array_ptr, bool noDeepCopy);
+
+// Copy and transpose.
+template <size_t nrows_in, typename T>
+void Transpose(const std::vector<T> &in, T *out);
+
+// Useful when zero-based indexing is used.
+template <size_t nrows_in, typename T>
+void TransposeAddOne(const std::vector<T> &in, T *out);
+
 
 mxArray *UnshareArray(int index, const mxArray *prhs[]) {
   mxArray *unshared = const_cast<mxArray *>(prhs[index]);
@@ -101,6 +121,38 @@ int VerboseLevel() {
   mxArray *ptr = mexGetVariable("global", "mexVerboseLevel");
   if (ptr == NULL) return kDefaultVerboseLevel;
   return mxGetScalar(ptr);
+}
+
+void CaptureErrorMsg(std::stringstream &stderr_content) {
+  std::cerr.rdbuf(stderr_content.rdbuf());
+}
+
+void CaptureErrorMsg(const std::string &filename) {
+  freopen(filename.c_str(), "a", stderr);
+}
+
+template <size_t nrows_in, typename T>
+void Transpose(const std::vector<T> &in, T *out) {
+  const size_t ncols_in = in.size() / nrows_in;
+  size_t offset = 0;
+#pragma omp parallel for
+  for (size_t i = 0; i < in.size(); i += nrows_in, ++offset) {
+    for (size_t j = 0; j < nrows_in; ++j) {
+      *(out + offset + ncols_in * j) = in[i + j];
+    }
+  }
+}
+
+template <size_t nrows_in, typename T>
+void TransposeAddOne(const std::vector<T> &in, T *out) {
+  const size_t ncols_in = in.size() / nrows_in;
+  size_t offset = 0;
+#pragma omp parallel for
+  for (size_t i = 0; i < in.size(); i += nrows_in, ++offset) {
+    for (size_t j = 0; j < nrows_in; ++j) {
+      *(out + offset + ncols_in * j) = in[i + j]+1;
+    }
+  }
 }
 
 // e.g. LEVEL(2, MPRINTF("Not printed if logging level is less than 2."))
@@ -160,10 +212,10 @@ int VerboseLevel() {
 
 // Print message to MATLAB console.
 // e.g.MPRINTF(BOLD("%d"), argc);
-#define MPRINTF(...)             \
-  {                              \
-      mexPrintf(__VA_ARGS__);    \
-      mexEvalString("drawnow;"); \
+#define MPRINTF(...)           \
+  {                            \
+    mexPrintf(__VA_ARGS__);    \
+    mexEvalString("drawnow;"); \
   }
 
 // Display error and exit.
@@ -319,10 +371,8 @@ void *GetArg(mwSize index, const mxArray *input[], mwSize nrows, mwSize ncols) {
 }
 
 void DisplayVariable(std::string name, std::string value, size_t size,
-                            void* ptr, std::string file, int line,
-                            std::string func) {
-  MPRINTF("[INFO]  (%s:%d %s)  %s=%s  &%s=%p  %d\n",
-          file.c_str(), line, func.c_str(), name.c_str(), value.c_str(),
-          name.c_str(), ptr, (int)size);
+                     void *ptr, std::string file, int line, std::string func) {
+  MPRINTF("[INFO]  (%s:%d %s)  %s=%s  &%s=%p  %d\n", file.c_str(), line,
+          func.c_str(), name.c_str(), value.c_str(), name.c_str(), ptr,
+          (int)size);
 }
-

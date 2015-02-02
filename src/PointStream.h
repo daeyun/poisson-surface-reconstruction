@@ -53,6 +53,18 @@ public:
 };
 
 template< class Real >
+class ArrayPointStream : public PointStream< Real >
+{
+	size_t _current;
+  std::vector<double>* _data;
+public:
+  ArrayPointStream(std::vector<double>* data);
+	~ArrayPointStream( void );
+	void reset( void );
+	bool nextPoint( Point3D< Real >& p , Point3D< Real >& n );
+};
+
+template< class Real >
 class ASCIIPointStream : public PointStream< Real >
 {
 	FILE* _fp;

@@ -33,6 +33,12 @@
 #ifndef __PLY_H__
 #define __PLY_H__
 
+#include <vector>
+extern std::vector<double> double_data;
+extern std::vector<int> int_data;
+extern bool is_writing_to_memory;
+extern bool is_writing_int;
+
 #ifndef WIN32
 #define _strdup strdup
 #endif
@@ -635,6 +641,8 @@ int PlyWritePolygons( char* fileName , CoredMeshData< Vertex >* mesh , int file_
 	for( i=0 ; i<commentNum ; i++ ) ply_put_comment( ply , comments[i] );
 
 	ply_header_complete( ply );
+
+  is_writing_int = false;
 	
 	// write vertices
 	ply_put_element_setup( ply , "vertex" );
@@ -651,6 +659,8 @@ int PlyWritePolygons( char* fileName , CoredMeshData< Vertex >* mesh , int file_
 		ply_put_element(ply, (void *) &vertex);		
 	}  // for, write vertices
 	
+  is_writing_int = true;
+
 	// write faces
 	std::vector< CoredVertexIndex > polygon;
 	ply_put_element_setup( ply , "face" );
