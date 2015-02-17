@@ -55,6 +55,10 @@ void mexFunction(int nargout, mxArray *out[], int nargin, const mxArray *in[]) {
 
        "--depth",      std::to_string((int)*depth).c_str(),
 
+       "--confidence",
+
+       "--nWeights",
+
        NULL};
 
   int argc = sizeof(argv) / sizeof(char *) - 1;
