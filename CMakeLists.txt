@@ -5,7 +5,8 @@ project(POISSON_RECON)
 add_subdirectory(src)
 
 # MATLAB MEX-File config
-set(MEX_PATH /Applications/MATLAB_R2014b.app/bin/mex)
+set(MEX_PATH /usr/local/MATLAB/R2014b/bin/mex)
+# set(MEX_PATH /Applications/MATLAB_R2014b.app/bin/mex)
 
 set(CMAKE_CXX_COMPILER ${MEX_PATH})
 set(CMAKE_C_COMPILER   ${MEX_PATH})
@@ -14,7 +15,7 @@ set(CMAKE_SHARED_LIBRARY_SUFFIX .mexa64)
 set(CMAKE_SHARED_LIBRARY_PREFIX)
 set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
  
-set(CMAKE_CXX_FLAGS "-cxx -largeArrayDims -O CXXFLAGS='$$CXXFLAGS -fPIC'")
+set(CMAKE_CXX_FLAGS "-cxx -largeArrayDims -O CXXFLAGS='$$CXXFLAGS -fPIC -O3 -std=c++11'")
 
 set(CMAKE_CXX_COMPILE_OBJECT 
     "<CMAKE_CXX_COMPILER> <DEFINES> <FLAGS> -outdir <OBJECT_DIR> -c <SOURCE>; mv <OBJECT_DIR>/*.o <OBJECT>"
