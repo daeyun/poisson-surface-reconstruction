@@ -4,6 +4,14 @@ set -e
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${DIR}
 
-cmake -H. -Bbuild -DCMAKE_CXX_COMPILER=g++-4.9 -DCMAKE_C_COMPILER=gcc-4.9
-make -Cbuild
+sudo gcc-config 1
+. /etc/profile
+
+cmake -H. -Bbuild
+make -j13 -Cbuild
+
 echo "Build successful"
+sudo gcc-config 2
+. /etc/profile
+
+sudo cp build/lib/libpoisson_recon_lib.so /usr/lib/

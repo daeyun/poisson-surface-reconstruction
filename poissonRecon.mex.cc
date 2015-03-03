@@ -12,8 +12,9 @@ using namespace mexutil;
 void mexFunction(int nargout, mxArray *out[], int nargin, const mxArray *in[]) {
   int_data.clear();
   double_data.clear();
+  mem_data.clear();
 
-  N_IN(3);
+  N_IN(7);
   N_OUT(2);
 
   mwSize point_ncols = mxGetN(in[0]);
@@ -24,6 +25,10 @@ void mexFunction(int nargout, mxArray *out[], int nargin, const mxArray *in[]) {
   double *points = (double *)GetArg<kDouble, EQ, EQ>(0, in, 0, 3);
   double *normals = (double *)GetArg<kDouble, EQ, EQ>(1, in, 0, 3);
   double *depth = (double *)GetArg<kDouble, EQ, EQ>(2, in, 1, 1);
+  double *full_depth = (double *)GetArg<kDouble, EQ, EQ>(3, in, 1, 1);
+  double *scale = (double *)GetArg<kDouble, EQ, EQ>(4, in, 1, 1);
+  double *samples_per_node = (double *)GetArg<kDouble, EQ, EQ>(5, in, 1, 1);
+  double *cg_depth = (double *)GetArg<kDouble, EQ, EQ>(6, in, 1, 1);
 
   if (point_nrows != normal_nrows) {
     ERR_EXIT("InputSizeError",
@@ -31,6 +36,15 @@ void mexFunction(int nargout, mxArray *out[], int nargin, const mxArray *in[]) {
   }
   if (*depth < 1 || *depth > 20) {
     ERR_EXIT("InputSizeError", "Depth must be in [1, 20]");
+  }
+  if (*full_depth < 1 || *full_depth > 20) {
+    ERR_EXIT("InputSizeError", "fullDepth must be in [1, 20]");
+  }
+  if (*samples_per_node < 1 || *samples_per_node > 500) {
+    ERR_EXIT("InputSizeError", "samplesPerNode must be in [1, 500]");
+  }
+  if (*full_depth < 0 || *full_depth > 20) {
+    ERR_EXIT("InputSizeError", "cgDepth must be in [0, 20]");
   }
 
   mem_data.resize(point_ncols * point_nrows + normal_ncols * normal_nrows);
@@ -54,6 +68,14 @@ void mexFunction(int nargout, mxArray *out[], int nargin, const mxArray *in[]) {
        "--out",        "none",
 
        "--depth",      std::to_string((int)*depth).c_str(),
+
+       "--fullDepth",      std::to_string((int)*full_depth).c_str(),
+
+       "--scale",      std::to_string((double)*scale).c_str(),
+
+       "--samplesPerNode",      std::to_string((int)*samples_per_node).c_str(),
+
+       "--cgDepth",      std::to_string((int)*cg_depth).c_str(),
 
        "--confidence",
 

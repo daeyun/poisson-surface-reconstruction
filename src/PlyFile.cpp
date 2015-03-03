@@ -2119,11 +2119,6 @@ Read an element from a binary file.
 	  if ((file_type != native_binary_type) && (ply_type_size[type] > 1))
 		  swap_bytes((char *)value, ply_type_size[type]);
 	  
-	  if (fwrite (value, ply_type_size[type], 1, fp) != 1)
-	  {
-		  fprintf(stderr, "PLY ERROR: fwrite() failed -- aborting.\n");
-		  exit(1);
-	  }
   }
   
   
