@@ -93,7 +93,6 @@ void Transpose(const std::vector<T> &in, T *out);
 template <size_t nrows_in, typename T>
 void TransposeAddOne(const std::vector<T> &in, T *out);
 
-
 mxArray *UnshareArray(int index, const mxArray *prhs[]) {
   mxArray *unshared = const_cast<mxArray *>(prhs[index]);
   mxUnshareArray(unshared, true);
@@ -134,11 +133,10 @@ void CaptureErrorMsg(const std::string &filename) {
 template <size_t nrows_in, typename T>
 void Transpose(const std::vector<T> &in, T *out) {
   const size_t ncols_in = in.size() / nrows_in;
-  size_t offset = 0;
 #pragma omp parallel for
-  for (size_t i = 0; i < in.size(); i += nrows_in, ++offset) {
+  for (size_t i = 0; i < in.size(); i += nrows_in) {
     for (size_t j = 0; j < nrows_in; ++j) {
-      *(out + offset + ncols_in * j) = in[i + j];
+      *(out + (i / nrows_in) + ncols_in * j) = in[i + j];
     }
   }
 }
@@ -146,11 +144,10 @@ void Transpose(const std::vector<T> &in, T *out) {
 template <size_t nrows_in, typename T>
 void TransposeAddOne(const std::vector<T> &in, T *out) {
   const size_t ncols_in = in.size() / nrows_in;
-  size_t offset = 0;
 #pragma omp parallel for
-  for (size_t i = 0; i < in.size(); i += nrows_in, ++offset) {
+  for (size_t i = 0; i < in.size(); i += nrows_in) {
     for (size_t j = 0; j < nrows_in; ++j) {
-      *(out + offset + ncols_in * j) = in[i + j]+1;
+      *(out + (i / nrows_in) + ncols_in * j) = in[i + j] + 1;
     }
   }
 }
@@ -180,7 +177,7 @@ void TransposeAddOne(const std::vector<T> &in, T *out) {
 #define N_OUT_RANGE(min, max)                                                \
   {                                                                          \
     if (N_LHS_VAR < min || N_LHS_VAR > max) {                                \
-      mexErrMsgIdAndTxt(MEX_IDENTIFIER("InputSizeError"),                    \
+      mexErrMsgIdAndTxt(MEX_IDENTIFIER("OutputSizeError"),                   \
                         "Number of outputs must be between %d and %d.", min, \
                         max);                                                \
     }                                                                        \
@@ -189,7 +186,7 @@ void TransposeAddOne(const std::vector<T> &in, T *out) {
 #define N_IN(num)                                             \
   {                                                           \
     if (N_RHS_VAR != num) {                                   \
-      mexErrMsgIdAndTxt(MEX_IDENTIFIER("OutputSizeError"),    \
+      mexErrMsgIdAndTxt(MEX_IDENTIFIER("InputSizeError"),     \
                         "Number of inputs must be %d.", num); \
     }                                                         \
   }

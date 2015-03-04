@@ -4,26 +4,15 @@ CMake build of http://www.cs.jhu.edu/~misha/Code/PoissonRecon/ with MATLAB MEX-F
 
 ## Build
 
-Edit `CMakeLists.txt`
-
 ```
-set(MEX_PATH /Applications/MATLAB_R2014b.app/bin/mex)
-```
-
-Compile
-
-```
-cmake -H. -Bbuild
-make -Cbuild
-
-ls bin
-PoissonRecon    SurfaceTrimmer    poissonRecon.mexmaci64
+cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Release
+make -j4 -Cbuild
 ```
 
 ## Usage
 
 ```
-[faces, vertices] = poissonRecon(points, normals, depth);
+[faces, vertices] = poissonRecon(points, normals, depth, fullDepth, scale, samplesPerNode, cgDepth);
 ```
 
 ### Example
@@ -48,8 +37,8 @@ axis equal; grid on;
 
 ## License
 
-- PoissonRecon code: BSD 3-Clause. `(c) 2006 Michael Kazhdan and Matthew Bolitho`
+- PoissonRecon code: `(c) 2006 Michael Kazhdan and Matthew Bolitho`
 
     See license.txt
 
-- mexutil.h: MPL 2.0. daeyun@dshin.org
+- mexutil.h: MPL 2.0. If this cmake/MATLAB build doesn't work (especially on windows), daeyun@daeyunshin.com

@@ -30,6 +30,7 @@ DAMAGE.
 std::vector<double> double_data;
 std::vector<int> int_data;
 std::vector<double> mem_data;
+bool* is_verbose;
 bool is_writing_to_memory = true;
 bool is_reading_from_memory = true;
 bool is_writing_int;
