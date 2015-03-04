@@ -1,41 +1,50 @@
 cmake_minimum_required(VERSION 2.8.4)
 
 project(POISSON_RECON)
+set(MEX_NAME "poissonRecon")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+    "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
+find_package(MATLAB REQUIRED)
+find_package(OpenMP REQUIRED)
+
+if(MATLAB_FOUND)
+  MESSAGE(STATUS "Matlab found at ${MATLAB_ROOT}")
+else(MATLAB_FOUND)
+  MESSAGE(FATAL_ERROR "Matlab not found")
+endif(MATLAB_FOUND)
+
+set(CMAKE_VERBOSE_MAKEFILE on)
+
+
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 add_subdirectory(src)
 
-# MATLAB MEX-File config
-set(MEX_PATH /usr/local/MATLAB/R2014b/bin/mex)
-# set(MEX_PATH /Applications/MATLAB_R2014b.app/bin/mex)
+set(MEX_OUTPUT_DIR "${PROJECT_SOURCE_DIR}")
+set(MEX_OUTPUT_FILENAME "${MEX_NAME}${MATLAB_MEX_EXTENSION}")
 
-set(CMAKE_CXX_COMPILER ${MEX_PATH})
-set(CMAKE_C_COMPILER   ${MEX_PATH})
- 
-set(CMAKE_SHARED_LIBRARY_SUFFIX .mexa64)
-set(CMAKE_SHARED_LIBRARY_PREFIX)
-set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
- 
-set(CMAKE_CXX_FLAGS "-cxx -largeArrayDims -O CXXFLAGS='$$CXXFLAGS -fPIC -std=c++11'")
 
-set(CMAKE_CXX_COMPILE_OBJECT 
-    "<CMAKE_CXX_COMPILER> <DEFINES> <FLAGS> -outdir <OBJECT_DIR> -c <SOURCE>; mv <OBJECT_DIR>/*.o <OBJECT>"
-)
- 
-set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS)
-set(LINK_LIBRARIES ${CORELIBS})
-
-get_property(POISSON_RECON_LIB_FILENAME TARGET poisson_recon_lib PROPERTY LOCATION)
-
-set(CMAKE_CXX_CREATE_SHARED_LIBRARY
-    "<CMAKE_CXX_COMPILER> -cxx <LINK_FLAGS> <CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS> -output ${POISSON_RECON_SOURCE_DIR}/bin/<TARGET> <OBJECTS> <LINK_LIBRARIES> -L${POISSON_RECON_SOURCE_DIR}/build ${POISSON_RECON_LIB_FILENAME}"
+add_custom_target(
+    "${PROJECT_NAME}_MEX" ALL
+    DEPENDS ${MEX_OUTPUT_DIR}/${MEX_OUTPUT_FILENAME}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
-set(CMAKE_INSTALL_RPATH "\$ORIGIN")
+if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    set(MEX_BUILD_FLAGS -g -v)
+else()
+    set(MEX_BUILD_FLAGS -O -v -DNDEBUG -DRELEASE)
+endif()
 
-file(GLOB_RECURSE MEX_INCLUDES "${POISSON_RECON_SOURCE_DIR}/*.mex.cc")
-
-foreach(MEX_INC ${MEX_INCLUDES})
-    get_filename_component(MEX_LIB_NAME ${MEX_INC} NAME_WE)
-    add_library(${MEX_LIB_NAME} SHARED ${MEX_INC})
-    add_dependencies(${MEX_LIB_NAME} poisson_recon_lib)
-endforeach()
+add_custom_command(
+    OUTPUT ${MEX_OUTPUT_DIR}/${MEX_OUTPUT_FILENAME}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    DEPENDS poisson_recon
+    COMMAND ${MATLAB_MEX_EXECUTABLE}
+    poissonRecon.mex.cc -lpoisson_recon
+    LDFLAGS=\"\\$$LDFLAGS ${OpenMP_CXX_FLAGS} -std=c++0x\"
+    CXXFLAGS=\"\\$$CXXFLAGS ${OpenMP_CXX_FLAGS} -std=c++0x\"
+    -largeArrayDims -cxx
+    -outdir ${MEX_OUTPUT_DIR} -output ${MEX_OUTPUT_FILENAME}
+    -L${LIBRARY_OUTPUT_PATH} ${MEX_BUILD_FLAGS}
+)

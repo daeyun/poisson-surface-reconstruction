@@ -2,6 +2,7 @@
 /bin
 /.ycm_extra_conf.*
 .ropeproject
+/eclipse-project
 
 
 ### C++ ###
