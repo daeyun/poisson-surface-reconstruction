@@ -37,7 +37,7 @@ void mexFunction(int nargout, mxArray *out[], int nargin, const mxArray *in[]) {
   double cg_depth =
       (nargin < 7) ? 0.0 : *((double *)GetArg<kDouble, EQ, EQ>(6, in, 1, 1));
   bool print_info =
-      (nargin < 8) ? true
+      (nargin < 8) ? false
                    : (0 < *((double *)GetArg<kDouble, EQ, EQ>(7, in, 1, 1)));
   is_verbose = &print_info;
 
