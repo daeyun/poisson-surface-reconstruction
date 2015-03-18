@@ -4,8 +4,10 @@ set -e
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${DIR}/..
 
-#sudo gcc-config 1
-#. /etc/profile
+if hash gcc-config 2>/dev/null; then
+    sudo gcc-config 4.7.3
+    . /etc/profile
+fi
 
 rm -f *.mexa64
 
@@ -13,5 +15,8 @@ cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug
 make -j13 -Cbuild
 
 echo "Build successful"
-#sudo gcc-config 2
-#. /etc/profile
+
+if hash gcc-config 2>/dev/null; then
+    sudo gcc-config 4.9.2
+    . /etc/profile
+fi
