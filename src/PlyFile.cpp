@@ -190,8 +190,8 @@ PlyFile *ply_write(
 	PlyElement *elem;
 	
 	/* check for NULL file pointer */
-	if (fp == NULL)
-		return (NULL);
+	//if (fp == NULL)
+		//return (NULL);
 	
 	if (native_binary_type == -1)
 		get_native_binary_type();
@@ -265,10 +265,11 @@ PlyFile *ply_open_for_writing(
 	/* open the file for writing */
 	
   // TODO: find a better way to do this
-  fp = stdout;
-	if (fp == NULL) {
-		return (NULL);
-	}
+  //fp = stdout;
+	//if (fp == NULL) {
+		//return (NULL);
+	//}
+  fp = NULL;
 	
 	/* create the actual PlyFile structure */
 	
@@ -503,11 +504,13 @@ void ply_header_complete(PlyFile *plyfile)
 	
 	/* write out the comments */
 	
+  /*
   if (*is_verbose) {
     for (i = 0; i < plyfile->num_comments; i++) {
       std::cout << plyfile->comments[i] << std::endl;
     }
   }
+  */
 	
 #if 0
 	/* write out object information */
@@ -1438,7 +1441,7 @@ Open a polygon file for reading.
   
   void ply_close(PlyFile *plyfile)
   {
-	  fclose (plyfile->fp);
+		//fclose (plyfile->fp);
 	  
 	  /* free up memory associated with the PLY file */
 	  free (plyfile);
